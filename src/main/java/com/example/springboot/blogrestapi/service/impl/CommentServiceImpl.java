@@ -9,6 +9,7 @@ import com.example.springboot.blogrestapi.payload.CommentResponse;
 import com.example.springboot.blogrestapi.repository.CommentRepository;
 import com.example.springboot.blogrestapi.repository.PostRepository;
 import com.example.springboot.blogrestapi.service.CommentService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -22,9 +23,12 @@ public class CommentServiceImpl implements CommentService {
 
     private PostRepository postRepository;
 
-    public CommentServiceImpl(CommentRepository commentRepository, PostRepository postRepository) {
+    private ModelMapper mapper;
+
+    public CommentServiceImpl(CommentRepository commentRepository, PostRepository postRepository, ModelMapper mapper) {
         this.commentRepository = commentRepository;
         this.postRepository = postRepository;
+        this.mapper = mapper;
     }
 
     @Override
@@ -66,24 +70,34 @@ public class CommentServiceImpl implements CommentService {
         return mapToDTO(upadtedCmt);
     }
 
+    @Override
+    public void deleteComment(Long postId, Long commentId) {
+        Post post=postRepository.findById(postId).orElseThrow(()->new ResourceNotFoundException("Post","id",postId));
+        Comment comment=commentRepository.findById(commentId).orElseThrow(()->new ResourceNotFoundException("comment","id",commentId));
+        if(!comment.getPost().getId().equals(post.getId())){
+            throw new BlogApiException(HttpStatus.BAD_REQUEST,"Comment does not belong to post");
+        }
+        commentRepository.delete(comment);
+    }
+
 
     // map entity to DTO
     private CommentDto mapToDTO(Comment comment){
-        CommentDto commentDto=new CommentDto();
-        commentDto.setId(comment.getId());
-        commentDto.setBody(comment.getBody());
-        commentDto.setName(comment.getName());
-        commentDto.setEmail(comment.getEmail());
+        CommentDto commentDto=mapper.map(comment,CommentDto.class);
+//        commentDto.setId(comment.getId());
+//        commentDto.setBody(comment.getBody());
+//        commentDto.setName(comment.getName());
+//        commentDto.setEmail(comment.getEmail());
         return commentDto;
     }
 
     // map DTO to entity
     private Comment mapToEntity(CommentDto commentDto){
-        Comment comment=new Comment();
-        comment.setId(commentDto.getId());
-        comment.setBody(commentDto.getBody());
-        comment.setName(commentDto.getBody());
-        comment.setEmail(commentDto.getEmail());
+        Comment comment=mapper.map(commentDto,Comment.class);
+//        comment.setId(commentDto.getId());
+//        comment.setBody(commentDto.getBody());
+//        comment.setName(commentDto.getBody());
+//        comment.setEmail(commentDto.getEmail());
         return comment;
     }
 }

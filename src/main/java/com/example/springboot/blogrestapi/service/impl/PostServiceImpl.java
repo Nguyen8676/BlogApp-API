@@ -6,6 +6,7 @@ import com.example.springboot.blogrestapi.payload.PostDto;
 import com.example.springboot.blogrestapi.payload.PostResponse;
 import com.example.springboot.blogrestapi.repository.PostRepository;
 import com.example.springboot.blogrestapi.service.PostService;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,10 +20,14 @@ import java.util.stream.Collectors;
 @Service
 public class PostServiceImpl implements PostService {
 
+
     PostRepository postRepository;
 
-    public PostServiceImpl(PostRepository postRepository) {
+    private ModelMapper mapper;
+
+    public PostServiceImpl(PostRepository postRepository, ModelMapper mapper) {
         this.postRepository = postRepository;
+        this.mapper = mapper;
     }
 
     @Override
@@ -86,19 +91,20 @@ public class PostServiceImpl implements PostService {
 
     // start map to DTO & opposite
     private PostDto mapToDTO(Post post){
-        PostDto postDto=new PostDto();
-        postDto.setId(post.getId());
-        postDto.setTitle(post.getTitle());
-        postDto.setContent(post.getContent());
-        postDto.setDescription(post.getDescription());
+        PostDto postDto=mapper.map(post,PostDto.class);
+
+//        postDto.setId(post.getId());
+//        postDto.setTitle(post.getTitle());
+//        postDto.setContent(post.getContent());
+//        postDto.setDescription(post.getDescription());
         return postDto;
     }
     private Post mapToEntity(PostDto postDto){
-        Post post=new Post();
-        post.setId(postDto.getId());
-        post.setTitle(postDto.getTitle());
-        post.setContent(postDto.getContent());
-        post.setDescription(postDto.getDescription());
+        Post post=mapper.map(postDto,Post.class);
+//        post.setId(postDto.getId());
+//        post.setTitle(postDto.getTitle());
+//        post.setContent(postDto.getContent());
+//        post.setDescription(postDto.getDescription());
         return post;
     }
     //end map to DTO & opposite
